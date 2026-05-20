@@ -8,12 +8,14 @@
   const STORAGE_HIDDEN_TRICKS = "aeriarl-hidden-tricks";
   const STORAGE_HIDDEN_PERF = "aeriarl-hidden-performances";
   const STORAGE_ADMIN = "aeriarl-admin-session";
+  const STORAGE_DIFFICULTY_FILTER = "aeriarl-difficulty-filter";
   const IDB_NAME = "aeriarl-video-blobs";
   const IDB_STORE = "blobs";
 
   let blobUrlCache = new Map();
   let editingItem = null;
   let playerModal, playerVideo;
+  let currentDifficultyFilter = "beginner";
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -61,11 +63,15 @@
     checkAdminFromUrl();
     applyAdminUI();
 
+    currentDifficultyFilter = localStorage.getItem(STORAGE_DIFFICULTY_FILTER) || "beginner";
+
     initTheme();
     initNav();
     initContact();
     initModals();
     initPlayer();
+    initDifficultyFilter();
+    initTabs();
 
     document.getElementById("adminLoginBtn")?.addEventListener("click", () => {
       if (isAdmin()) {
@@ -89,7 +95,8 @@
   async function refreshAllFeeds() {
     const tricks = await getFeedItems("tricks");
     const performances = await getFeedItems("performances");
-    await renderFeed("tricksFeed", tricks, "tricks");
+    const filteredTricks = tricks.filter(t => applyDifficultyFilter(t));
+    await renderFeed("tricksFeed", filteredTricks, "tricks");
     await renderFeed("performancesFeed", performances, "performances");
     initFeedSearch("tricksFeed", "tricksSearch", "tricksEmpty");
     initFeedSearch("performancesFeed", "performancesSearch", "performancesEmpty");
@@ -153,6 +160,50 @@
     return (feed === "tricks" ? DEFAULT_TRICKS : DEFAULT_PERFORMANCES).map((d) => d.id);
   }
 
+  /* ---------- Difficulty Filter ---------- */
+  function applyDifficultyFilter(trick) {
+    if (currentDifficultyFilter === "all") return true;
+    const tags = trick.tags || [];
+    return tags.includes(currentDifficultyFilter);
+  }
+
+  function initDifficultyFilter() {
+    const btns = document.querySelectorAll(".difficulty-filter__btn");
+    btns.forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const value = btn.dataset.value;
+        currentDifficultyFilter = value;
+        localStorage.setItem(STORAGE_DIFFICULTY_FILTER, value);
+        document.querySelector(".difficulty-filter").removeAttribute("open");
+        await refreshAllFeeds();
+      });
+    });
+  }
+
+  function initTabs() {
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tabName = btn.dataset.tab;
+        const feedId = tabName.includes("favorites") ? (tabName.includes("perf") ? "performancesFeedFavorites" : "tricksFeedFavorites") : (tabName.includes("perf") ? "performancesFeed" : "tricksFeed");
+        const otherFeedId = feedId.includes("Favorites") ? feedId.replace("Favorites", "") : feedId + "Favorites";
+        const emptyAllId = tabName.includes("perf") ? (tabName.includes("favorites") ? "performancesEmpty" : "performancesEmpty") : (tabName.includes("favorites") ? "tricksEmpty" : "tricksEmpty");
+        const emptyFavId = tabName.includes("perf") ? "performancesFavoritesEmpty" : "tricksFavoritesEmpty";
+        const emptyId = tabName.includes("favorites") ? emptyFavId : emptyAllId;
+        const otherEmptyId = tabName.includes("favorites") ? emptyAllId : emptyFavId;
+        
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("tab-btn--active"));
+        btn.classList.add("tab-btn--active");
+        
+        document.getElementById(feedId)?.removeAttribute("hidden");
+        document.getElementById(otherFeedId)?.setAttribute("hidden", "");
+        document.getElementById(emptyId)?.setAttribute("hidden", "");
+        document.getElementById(otherEmptyId)?.setAttribute("hidden", "");
+      });
+    });
+  }
+
   /* ---------- IndexedDB ---------- */
   function openIdb() {
     return new Promise((resolve, reject) => {
@@ -212,7 +263,7 @@
     if (!query) return true;
     const text = `${title} ${description}`;
 
-    const regexMatch = query.match(/^\/(.+)\/([gimsuy]*)$/);
+    const regexMatch = query.match(/^\/(.*)\/([gimsuy]*)$/);
     if (regexMatch) {
       try {
         return new RegExp(regexMatch[1], regexMatch[2]).test(text);
@@ -307,6 +358,7 @@
       <div class="video-card__body">
         <div class="video-card__head">
           <h3 class="video-card__title">${safeTitle}</h3>
+          <button type="button" class="video-card__favorite-btn" aria-label="Add to favorites" title="Add to favorites">♡</button>
           ${admin ? `<button type="button" class="video-card__edit" aria-label="Edit" title="Edit">✎</button>` : ""}
         </div>
         <p class="video-card__desc">${safeDesc}</p>
@@ -319,6 +371,7 @@
 
     const playBtn = card.querySelector(".video-card__play-btn");
     const fsBtn = card.querySelector(".video-card__fs-btn");
+    const favBtn = card.querySelector(".video-card__favorite-btn");
 
     playBtn?.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -335,6 +388,15 @@
       openPlayer(src, item.title);
     });
 
+    favBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFavorite(item.id, feedType);
+      updateFavoriteButton(favBtn, item.id, feedType);
+      refreshAllFeeds();
+    });
+
+    updateFavoriteButton(favBtn, item.id, feedType);
+
     card.querySelector(".video-card__edit")?.addEventListener("click", (e) => {
       e.stopPropagation();
       openEditModal(feedType, item);
@@ -346,6 +408,42 @@
     }
 
     return card;
+  }
+
+  function updateFavoriteButton(btn, itemId, feedType) {
+    if (!btn) return;
+    const isFav = isFavorited(itemId, feedType);
+    btn.classList.toggle("favorited", isFav);
+    btn.textContent = isFav ? "♥" : "♡";
+  }
+
+  function getFavorites(feedType) {
+    const key = feedType === "tricks" ? "aeriarl-favorites-tricks" : "aeriarl-favorites-performances";
+    try {
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function setFavorites(feedType, ids) {
+    const key = feedType === "tricks" ? "aeriarl-favorites-tricks" : "aeriarl-favorites-performances";
+    localStorage.setItem(key, JSON.stringify(ids));
+  }
+
+  function isFavorited(itemId, feedType) {
+    return getFavorites(feedType).includes(itemId);
+  }
+
+  function toggleFavorite(itemId, feedType) {
+    const favs = getFavorites(feedType);
+    const idx = favs.indexOf(itemId);
+    if (idx >= 0) {
+      favs.splice(idx, 1);
+    } else {
+      favs.push(itemId);
+    }
+    setFavorites(feedType, favs);
   }
 
   function escapeHtml(s) {

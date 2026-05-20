@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=7" />
 </head>
 <body>
   <div class="site-bg" aria-hidden="true"></div>
@@ -94,29 +94,16 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input type="search" id="tricksSearch" placeholder="Search title or description (supports /regex/)" autocomplete="off" />
           </div>
+          <details class="difficulty-filter">
+            <summary class="difficulty-filter__label">Level ▼</summary>
+            <div class="difficulty-filter__dropdown">
+              <button type="button" class="difficulty-filter__btn" data-value="beginner">Beginner</button>
+              <button type="button" class="difficulty-filter__btn" data-value="intermediate">Intermediate</button>
+              <button type="button" class="difficulty-filter__btn" data-value="expert">Expert</button>
+              <button type="button" class="difficulty-filter__btn" data-value="all">All Levels</button>
+            </div>
+          </details>
           <button type="button" class="btn-add admin-only" id="addTrickBtn" aria-label="Add trick video">+</button>
-        </div>
-        <div class="filter-section">
-          <div class="filter-group">
-            <h3 class="filter-group__title">Difficulty</h3>
-            <div class="filter-buttons" id="difficultyFilters">
-              <button type="button" class="filter-btn" data-filter="difficulty" data-value="all">All</button>
-              <button type="button" class="filter-btn" data-filter="difficulty" data-value="beginner">Beginner</button>
-              <button type="button" class="filter-btn" data-filter="difficulty" data-value="intermediate">Intermediate</button>
-              <button type="button" class="filter-btn" data-filter="difficulty" data-value="expert">Expert</button>
-            </div>
-          </div>
-          <div class="filter-group">
-            <h3 class="filter-group__title">Element</h3>
-            <div class="filter-buttons" id="elementFilters">
-              <button type="button" class="filter-btn" data-filter="element" data-value="all">All</button>
-              <button type="button" class="filter-btn" data-filter="element" data-value="silks">Silks</button>
-              <button type="button" class="filter-btn" data-filter="element" data-value="hoop">Hoop</button>
-              <button type="button" class="filter-btn" data-filter="element" data-value="trapeze">Trapeze</button>
-              <button type="button" class="filter-btn" data-filter="element" data-value="straps">Straps</button>
-              <button type="button" class="filter-btn" data-filter="element" data-value="hammock">Hammock</button>
-            </div>
-          </div>
         </div>
         <div class="tabs-nav">
           <button type="button" class="tab-btn tab-btn--active" data-tab="all-tricks">All Tricks</button>
@@ -125,11 +112,11 @@
         <div class="video-feed" id="tricksFeed" aria-label="Tricks video feed"></div>
         <div class="video-feed" id="tricksFeedFavorites" aria-label="Favorite tricks" hidden></div>
         <p class="feed-empty" id="tricksEmpty" hidden>No tricks match your filters.</p>
-        <p class="feed-empty" id="tricksFavoritesEmpty" hidden>No favorite tricks yet. Click the heart icon on tricks to add them!</p>
+        <p class="feed-empty" id="tricksFavoritesEmpty" hidden>Explore our library and add tricks to your favorites!</p>
       </div>
     </section>
 
-    <section class="section feed-section feed-section--alt" id="performances">
+    <section class="section feed-section" id="performances">
       <div class="container">
         <div class="section__header">
           <h2 class="section__title">Performance Library</h2>
@@ -149,7 +136,7 @@
         <div class="video-feed" id="performancesFeed" aria-label="Performance Library video feed"></div>
         <div class="video-feed" id="performancesFeedFavorites" aria-label="Favorite performances" hidden></div>
         <p class="feed-empty" id="performancesEmpty" hidden>No performances match your search.</p>
-        <p class="feed-empty" id="performancesFavoritesEmpty" hidden>No favorite performances yet. Click the heart icon on performances to add them!</p>
+        <p class="feed-empty" id="performancesFavoritesEmpty" hidden>Explore our library and add performances to your favorites!</p>
       </div>
     </section>
 
@@ -235,7 +222,7 @@
     </div>
   </div>
 
-  <script src="videos-data.js?v=5"></script>
-  <script src="script.js?v=5"></script>
+  <script src="videos-data.js?v=7"></script>
+  <script src="script.js?v=7"></script>
 </body>
 </html>
