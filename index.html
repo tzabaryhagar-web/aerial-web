@@ -75,6 +75,11 @@
             inspiration for your next routine, performance, or training session.
           </p>
         </div>
+        <div class="disclaimer__card">
+          <p class="disclaimer__text">
+            We encourage you to learn and explore. Please take care of yourself and try only what you're capable of with responsibility and proper supervision. Your safety is paramount.
+          </p>
+        </div>
       </div>
     </section>
 
@@ -82,7 +87,7 @@
       <div class="container">
         <div class="section__header">
           <h2 class="section__title">Trick Library</h2>
-          <p class="section__subtitle">Tap a video to play · fullscreen available · search by title or description</p>
+          <p class="section__subtitle">Tap a video to play · fullscreen available · filter and search by title or description</p>
         </div>
         <div class="feed-toolbar">
           <div class="search-bar">
@@ -91,8 +96,36 @@
           </div>
           <button type="button" class="btn-add admin-only" id="addTrickBtn" aria-label="Add trick video">+</button>
         </div>
+        <div class="filter-section">
+          <div class="filter-group">
+            <h3 class="filter-group__title">Difficulty</h3>
+            <div class="filter-buttons" id="difficultyFilters">
+              <button type="button" class="filter-btn" data-filter="difficulty" data-value="all">All</button>
+              <button type="button" class="filter-btn" data-filter="difficulty" data-value="beginner">Beginner</button>
+              <button type="button" class="filter-btn" data-filter="difficulty" data-value="intermediate">Intermediate</button>
+              <button type="button" class="filter-btn" data-filter="difficulty" data-value="expert">Expert</button>
+            </div>
+          </div>
+          <div class="filter-group">
+            <h3 class="filter-group__title">Element</h3>
+            <div class="filter-buttons" id="elementFilters">
+              <button type="button" class="filter-btn" data-filter="element" data-value="all">All</button>
+              <button type="button" class="filter-btn" data-filter="element" data-value="silks">Silks</button>
+              <button type="button" class="filter-btn" data-filter="element" data-value="hoop">Hoop</button>
+              <button type="button" class="filter-btn" data-filter="element" data-value="trapeze">Trapeze</button>
+              <button type="button" class="filter-btn" data-filter="element" data-value="straps">Straps</button>
+              <button type="button" class="filter-btn" data-filter="element" data-value="hammock">Hammock</button>
+            </div>
+          </div>
+        </div>
+        <div class="tabs-nav">
+          <button type="button" class="tab-btn tab-btn--active" data-tab="all-tricks">All Tricks</button>
+          <button type="button" class="tab-btn" data-tab="favorites">Favorites ♡</button>
+        </div>
         <div class="video-feed" id="tricksFeed" aria-label="Tricks video feed"></div>
-        <p class="feed-empty" id="tricksEmpty" hidden>No tricks match your search.</p>
+        <div class="video-feed" id="tricksFeedFavorites" aria-label="Favorite tricks" hidden></div>
+        <p class="feed-empty" id="tricksEmpty" hidden>No tricks match your filters.</p>
+        <p class="feed-empty" id="tricksFavoritesEmpty" hidden>No favorite tricks yet. Click the heart icon on tricks to add them!</p>
       </div>
     </section>
 
@@ -109,8 +142,14 @@
           </div>
           <button type="button" class="btn-add admin-only" id="addPerformanceBtn" aria-label="Add performance video">+</button>
         </div>
+        <div class="tabs-nav">
+          <button type="button" class="tab-btn tab-btn--active" data-tab="all-performances">All Performances</button>
+          <button type="button" class="tab-btn" data-tab="favorites-perf">Favorites ♡</button>
+        </div>
         <div class="video-feed" id="performancesFeed" aria-label="Performance Library video feed"></div>
+        <div class="video-feed" id="performancesFeedFavorites" aria-label="Favorite performances" hidden></div>
         <p class="feed-empty" id="performancesEmpty" hidden>No performances match your search.</p>
+        <p class="feed-empty" id="performancesFavoritesEmpty" hidden>No favorite performances yet. Click the heart icon on performances to add them!</p>
       </div>
     </section>
 

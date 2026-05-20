@@ -7,28 +7,28 @@ const DEFAULT_TRICKS = [
     src: "assets/videos/tricks/img-0639.mp4",
     title: "Trick — IMG 0639",
     description: "Aerial trick practice — silks and transitions.",
-    tags: ["silks"],
+    tags: ["silks", "beginner"],
   },
   {
     id: "trick-0846",
     src: "assets/videos/tricks/img-0846.mp4",
     title: "Trick — IMG 0846",
     description: "Extended trick sequence for routine building.",
-    tags: ["hoop"],
+    tags: ["hoop", "intermediate"],
   },
   {
     id: "trick-7636",
     src: "assets/videos/tricks/img-7636.mp4",
     title: "Trick — IMG 7636",
     description: "Mount and flow work on aerial apparatus.",
-    tags: ["hammock"],
+    tags: ["hammock", "expert"],
   },
   {
     id: "trick-9046",
     src: "assets/videos/tricks/img-9046.mp4",
     title: "Trick — IMG 9046",
     description: "Combination move — save for your next combo.",
-    tags: ["straps"],
+    tags: ["straps", "intermediate"],
   },
 ];
 
