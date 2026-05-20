@@ -8,24 +8,40 @@
   const contactForm = document.getElementById("contactForm");
   const formStatus = document.getElementById("formStatus");
   const yearEl = document.getElementById("year");
+  const themeToggle = document.getElementById("themeToggle");
+  const html = document.documentElement;
+
+  const THEME_KEY = "aeriarl-theme";
 
   /* Footer year */
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
-  /* Header scroll state */
+  /* Theme toggle */
+  function applyTheme(theme) {
+    html.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_KEY, theme);
+  }
+
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  if (savedTheme === "light" || savedTheme === "dark") {
+    applyTheme(savedTheme);
+  }
+
+  themeToggle.addEventListener("click", () => {
+    const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
+    applyTheme(next);
+  });
+
+  /* Header scroll */
   function onScroll() {
-    if (window.scrollY > 40) {
-      header.classList.add("header--scrolled");
-    } else {
-      header.classList.remove("header--scrolled");
-    }
+    header.classList.toggle("header--scrolled", window.scrollY > 40);
     updateActiveNav();
   }
 
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
-  /* Mobile navigation */
+  /* Mobile nav */
   navToggle.addEventListener("click", () => {
     const isOpen = navLinks.classList.toggle("nav__links--open");
     navToggle.classList.toggle("nav__toggle--open", isOpen);
@@ -39,35 +55,28 @@
       navLinks.classList.remove("nav__links--open");
       navToggle.classList.remove("nav__toggle--open");
       navToggle.setAttribute("aria-expanded", "false");
-      navToggle.setAttribute("aria-label", "Open menu");
       document.body.style.overflow = "";
     });
   });
 
-  /* Active nav link on scroll */
+  /* Active nav */
   const sections = document.querySelectorAll("section[id]");
 
   function updateActiveNav() {
     const scrollPos = window.scrollY + 120;
-
     sections.forEach((section) => {
       const top = section.offsetTop;
       const height = section.offsetHeight;
       const id = section.getAttribute("id");
-
       if (scrollPos >= top && scrollPos < top + height) {
         navLinkItems.forEach((link) => {
-          link.classList.remove("nav__link--active");
-          if (link.getAttribute("href") === `#${id}`) {
-            link.classList.add("nav__link--active");
-          }
+          link.classList.toggle("nav__link--active", link.getAttribute("href") === `#${id}`);
         });
       }
     });
   }
 
   /* Reveal on scroll */
-  const revealEls = document.querySelectorAll(".reveal");
   const revealObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -80,23 +89,21 @@
     { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
   );
 
-  revealEls.forEach((el) => revealObserver.observe(el));
+  document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
 
-  /* Animated stat counters */
+  /* Stat counters */
   const statNums = document.querySelectorAll(".hero__stat-num[data-count]");
 
   function animateCounter(el) {
     const target = parseInt(el.dataset.count, 10);
     const duration = 1200;
     const start = performance.now();
-
     function tick(now) {
       const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       el.textContent = Math.round(eased * target);
       if (progress < 1) requestAnimationFrame(tick);
     }
-
     requestAnimationFrame(tick);
   }
 
@@ -115,24 +122,94 @@
   const heroStats = document.querySelector(".hero__stats");
   if (heroStats) statsObserver.observe(heroStats);
 
-  /* Skill bar animation */
-  const skillFills = document.querySelectorAll(".skill-bar__fill");
+  /* Video feed builder */
+  function createVideoCard(item) {
+    const card = document.createElement("article");
+    card.className = "video-card reveal";
+    card.dataset.searchText = `${item.title} ${item.description} ${item.tags.join(" ")}`.toLowerCase();
 
-  const barObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const fill = entry.target;
-          const width = fill.dataset.width;
-          fill.style.width = `${width}%`;
-          barObserver.unobserve(fill);
+    card.innerHTML = `
+      <div class="video-card__media" role="button" tabindex="0" aria-label="Play ${item.title}">
+        <video src="${item.src}" preload="metadata" playsinline loop muted></video>
+        <div class="video-card__play" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+      <div class="video-card__body">
+        <h3 class="video-card__title">${item.title}</h3>
+        <p class="video-card__desc">${item.description}</p>
+        <div class="video-card__tags">${item.tags.map((t) => `<span>${t}</span>`).join("")}</div>
+      </div>
+    `;
+
+    const media = card.querySelector(".video-card__media");
+    const video = card.querySelector("video");
+
+    function togglePlay() {
+      document.querySelectorAll(".video-card.is-playing video").forEach((v) => {
+        if (v !== video) {
+          v.pause();
+          v.closest(".video-card").classList.remove("is-playing");
         }
       });
-    },
-    { threshold: 0.3 }
-  );
 
-  skillFills.forEach((fill) => barObserver.observe(fill));
+      if (video.paused) {
+        video.muted = false;
+        video.play().catch(() => {
+          video.muted = true;
+          video.play();
+        });
+        card.classList.add("is-playing");
+      } else {
+        video.pause();
+        card.classList.remove("is-playing");
+      }
+    }
+
+    media.addEventListener("click", togglePlay);
+    media.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        togglePlay();
+      }
+    });
+
+    video.addEventListener("ended", () => card.classList.remove("is-playing"));
+
+    return card;
+  }
+
+  function initFeed(feedId, emptyId, videos, searchId) {
+    const feed = document.getElementById(feedId);
+    const empty = document.getElementById(emptyId);
+    const search = document.getElementById(searchId);
+    const cards = [];
+
+    videos.forEach((item) => {
+      const card = createVideoCard(item);
+      feed.appendChild(card);
+      cards.push(card);
+      revealObserver.observe(card);
+    });
+
+    function filterFeed(query) {
+      const q = query.trim().toLowerCase();
+      let visible = 0;
+
+      cards.forEach((card) => {
+        const match = !q || card.dataset.searchText.includes(q);
+        card.classList.toggle("is-hidden", !match);
+        if (match) visible++;
+      });
+
+      empty.hidden = visible > 0;
+    }
+
+    search.addEventListener("input", () => filterFeed(search.value));
+  }
+
+  initFeed("tricksFeed", "tricksEmpty", TRICKS_VIDEOS, "tricksSearch");
+  initFeed("projectsFeed", "projectsEmpty", PROJECTS_VIDEOS, "projectsSearch");
 
   /* Contact form */
   contactForm.addEventListener("submit", (e) => {
@@ -150,8 +227,7 @@
       return;
     }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       formStatus.textContent = "Please enter a valid email address.";
       formStatus.classList.add("form-status--error");
       return;
