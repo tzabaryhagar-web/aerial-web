@@ -3,22 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Aeriarl's Bank — discover, track, and combine aerial silks, hoop, and hammock skills." />
+  <meta name="description" content="Aeriarl's Bank — aerial silks, hoop, hammock, and straps skills library." />
   <meta name="base-path" content="/aerial-web/" />
   <title>Aeriarl's Bank | Aerial Acrobatics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
+  <div class="site-bg" aria-hidden="true"></div>
+  <div class="site-bg-overlay" aria-hidden="true"></div>
   <div class="noise" aria-hidden="true"></div>
-  <div class="gradient-orb gradient-orb--1" aria-hidden="true"></div>
-  <div class="gradient-orb gradient-orb--2" aria-hidden="true"></div>
 
   <header class="header" id="header">
     <nav class="nav container">
-      <a href="#hero" class="nav__logo">Aeriarl's Bank</a>
+      <ul class="nav__links" id="navLinks">
+        <li><a href="#about" class="nav__link">About</a></li>
+        <li><a href="#tricks" class="nav__link">Tricks</a></li>
+        <li><a href="#performances" class="nav__link">Performance Library</a></li>
+        <li><a href="#contact" class="nav__link nav__link--cta">Contact</a></li>
+      </ul>
       <div class="nav__actions">
         <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light mode">
           <svg class="theme-toggle__icon theme-toggle__icon--sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -32,12 +37,6 @@
           <span></span><span></span><span></span>
         </button>
       </div>
-      <ul class="nav__links" id="navLinks">
-        <li><a href="#about" class="nav__link">About</a></li>
-        <li><a href="#tricks" class="nav__link">Tricks</a></li>
-        <li><a href="#projects" class="nav__link">Projects</a></li>
-        <li><a href="#contact" class="nav__link nav__link--cta">Contact</a></li>
-      </ul>
     </nav>
   </header>
 
@@ -47,7 +46,7 @@
         <div class="hero__content">
           <p class="hero__eyebrow">
             <span class="hero__status"></span>
-            Aerial silks · Hoop · Hammock
+            Silks · Hoop · Hammock · Straps
           </p>
           <h1 class="hero__title">
             Welcome to <span class="text-gradient">Aeriarl's Bank</span>
@@ -58,35 +57,10 @@
           </p>
           <div class="hero__actions">
             <a href="#tricks" class="btn btn--primary">Explore Tricks</a>
-            <a href="#projects" class="btn btn--ghost">Watch Projects</a>
-          </div>
-          <div class="hero__stats">
-            <div class="hero__stat">
-              <span class="hero__stat-num">4</span>
-              <span class="hero__stat-label">Trick Videos</span>
-            </div>
-            <div class="hero__stat">
-              <span class="hero__stat-num">4</span>
-              <span class="hero__stat-label">Projects</span>
-            </div>
-            <div class="hero__stat">
-              <span class="hero__stat-num">3</span>
-              <span class="hero__stat-label">Apparatus</span>
-            </div>
-          </div>
-        </div>
-        <div class="hero__visual">
-          <div class="hero__card">
-            <div class="hero__card-icon">✦</div>
-            <h3>Silks · Hoop · Hammock</h3>
-            <p>Scroll the feed, search by description, and save inspiration for your next session.</p>
+            <a href="#performances" class="btn btn--ghost">Performance Library</a>
           </div>
         </div>
       </div>
-      <a href="#about" class="hero__scroll" aria-label="Scroll to about">
-        <span>Scroll</span>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-      </a>
     </section>
 
     <section class="section about" id="about">
@@ -95,22 +69,11 @@
           <span class="section__tag">01 — About</span>
           <h2 class="section__title">The Bank</h2>
         </div>
-        <div class="about__banner">
-          <img
-            src="assets/images/about-bg.jpeg"
-            alt="Aerial acrobatics"
-            class="about__banner-img"
-            width="1920"
-            height="1080"
-            loading="eager"
-          />
-          <div class="about__banner-overlay" aria-hidden="true"></div>
-          <div class="about__banner-content">
-            <p class="about__banner-text">
-              Discover, track, and combine aerial silks, hoop, and hammock skills. Built to spark
-              inspiration for your next routine, performance, or training session.
-            </p>
-          </div>
+        <div class="about__card">
+          <p class="about__text">
+            Discover, track, and combine aerial silks, hoop, hammock, and straps skills. Built to spark
+            inspiration for your next routine, performance, or training session.
+          </p>
         </div>
       </div>
     </section>
@@ -120,124 +83,36 @@
         <div class="section__header">
           <span class="section__tag">02 — Tricks</span>
           <h2 class="section__title">Trick Library</h2>
-          <p class="section__subtitle">Swipe through aerial moves — tap a video to play, read the description below.</p>
+          <p class="section__subtitle">Tap a video to play · fullscreen available · search by title or description</p>
         </div>
         <div class="feed-toolbar">
           <div class="search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="search" id="tricksSearch" placeholder="Search tricks by description..." autocomplete="off" />
+            <input type="search" id="tricksSearch" placeholder="Search title or description (supports /regex/)" autocomplete="off" />
           </div>
+          <button type="button" class="btn-add" id="addTrickBtn" aria-label="Add trick video">+</button>
         </div>
-        <div class="video-feed" id="tricksFeed" aria-label="Tricks video feed">
-          <article class="video-card" data-search-text="cube sequence aerial silks cube wrap stacked poses foundation combining silk tricks silks cube wraps">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Cube Sequence">
-              <video src="assets/videos/cube.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Cube Sequence</h3>
-              <p class="video-card__desc">Aerial silks cube wrap and stacked poses — foundation for combining silk tricks.</p>
-              <div class="video-card__tags"><span>silks</span><span>cube</span><span>wraps</span></div>
-            </div>
-          </article>
-          <article class="video-card" data-search-text="trapeze flow trapeze transitions beats release work dynamic routine building trapeze transitions beats">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Trapeze Flow">
-              <video src="assets/videos/trapeze.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Trapeze Flow</h3>
-              <p class="video-card__desc">Trapeze transitions, beats, and release work for dynamic routine building.</p>
-              <div class="video-card__tags"><span>trapeze</span><span>transitions</span><span>beats</span></div>
-            </div>
-          </article>
-          <article class="video-card" data-search-text="triple hoop lyra triple hoop combinations spins mounts linking aerial hoop tricks hoop lyra spins">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Triple Hoop">
-              <video src="assets/videos/triple-hoop.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Triple Hoop</h3>
-              <p class="video-card__desc">Lyra triple hoop combinations — spins, mounts, and linking aerial hoop tricks.</p>
-              <div class="video-card__tags"><span>hoop</span><span>lyra</span><span>spins</span></div>
-            </div>
-          </article>
-          <article class="video-card" data-search-text="mixed apparatus silks hoop hammock skills woven together inspiration next combo silks hoop hammock combo">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Mixed Apparatus">
-              <video src="assets/videos/video-project-1.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Mixed Apparatus</h3>
-              <p class="video-card__desc">Silks, hoop, and hammock skills woven together — inspiration for your next combo.</p>
-              <div class="video-card__tags"><span>silks</span><span>hoop</span><span>hammock</span><span>combo</span></div>
-            </div>
-          </article>
-        </div>
+        <div class="video-feed" id="tricksFeed" aria-label="Tricks video feed"></div>
         <p class="feed-empty" id="tricksEmpty" hidden>No tricks match your search.</p>
       </div>
     </section>
 
-    <section class="section feed-section feed-section--alt" id="projects">
+    <section class="section feed-section feed-section--alt" id="performances">
       <div class="container">
         <div class="section__header">
-          <span class="section__tag">03 — Projects</span>
+          <span class="section__tag">03 — Performance Library</span>
           <h2 class="section__title">Performance Library</h2>
-          <p class="section__subtitle">Full routines and projects from the aerial acrobatics collection.</p>
+          <p class="section__subtitle">Full routines and performances from your aerial collection.</p>
         </div>
         <div class="feed-toolbar">
           <div class="search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="search" id="projectsSearch" placeholder="Search projects by description..." autocomplete="off" />
+            <input type="search" id="performancesSearch" placeholder="Search title or description (supports /regex/)" autocomplete="off" />
           </div>
+          <button type="button" class="btn-add" id="addPerformanceBtn" aria-label="Add performance video">+</button>
         </div>
-        <div class="video-feed" id="projectsFeed" aria-label="Projects video feed">
-          <article class="video-card" data-search-text="cube performance full cube routine aerial silks jennifer acrobatics library silks performance">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Cube Performance">
-              <video src="assets/videos/cube.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Cube — Performance</h3>
-              <p class="video-card__desc">Full cube routine on aerial silks from the Jennifer acrobatics library.</p>
-              <div class="video-card__tags"><span>silks</span><span>performance</span></div>
-            </div>
-          </article>
-          <article class="video-card" data-search-text="trapeze performance trapeze act showcase flowing sequences aerial strength elements trapeze performance">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Trapeze Performance">
-              <video src="assets/videos/trapeze.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Trapeze — Performance</h3>
-              <p class="video-card__desc">Trapeze act showcase with flowing sequences and aerial strength elements.</p>
-              <div class="video-card__tags"><span>trapeze</span><span>performance</span></div>
-            </div>
-          </article>
-          <article class="video-card" data-search-text="triple hoop performance triple aerial hoop project choreography trick combinations lyra hoop choreography">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Triple Hoop Performance">
-              <video src="assets/videos/triple-hoop.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Triple Hoop — Performance</h3>
-              <p class="video-card__desc">Triple aerial hoop project — choreography and trick combinations on lyra.</p>
-              <div class="video-card__tags"><span>hoop</span><span>choreography</span></div>
-            </div>
-          </article>
-          <article class="video-card" data-search-text="video project 1 edited aerial acrobatics compilation silks hoop hammock highlights compilation routine">
-            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Video Project 1">
-              <video src="assets/videos/video-project-1.mp4" preload="metadata" playsinline loop muted></video>
-              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
-            </div>
-            <div class="video-card__body">
-              <h3 class="video-card__title">Video Project 1</h3>
-              <p class="video-card__desc">Edited aerial acrobatics compilation — silks, hoop, and hammock highlights.</p>
-              <div class="video-card__tags"><span>compilation</span><span>routine</span></div>
-            </div>
-          </article>
-        </div>
-        <p class="feed-empty" id="projectsEmpty" hidden>No projects match your search.</p>
+        <div class="video-feed" id="performancesFeed" aria-label="Performance Library video feed"></div>
+        <p class="feed-empty" id="performancesEmpty" hidden>No performances match your search.</p>
       </div>
     </section>
 
@@ -248,16 +123,6 @@
             <span class="section__tag">04 — Contact</span>
             <h2 class="section__title">Get in Touch</h2>
             <p>Questions about a trick, collaboration, or training? Send a message.</p>
-            <div class="contact__links">
-              <a href="mailto:hello@aeriarl.dev" class="contact__link">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                hello@aeriarl.dev
-              </a>
-              <a href="https://github.com/tzabaryhagar-web/aerial-web" target="_blank" rel="noopener noreferrer" class="contact__link">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                GitHub
-              </a>
-            </div>
           </div>
           <form class="contact__form" id="contactForm" novalidate>
             <div class="form-group">
@@ -287,6 +152,52 @@
     </div>
   </footer>
 
-  <script src="script.js?v=3"></script>
+  <!-- Video player modal -->
+  <div class="modal" id="playerModal" hidden>
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel modal__panel--player">
+      <button type="button" class="modal__close" data-close-modal aria-label="Close player">&times;</button>
+      <video id="playerVideo" controls playsinline preload="metadata"></video>
+      <div class="player__actions">
+        <button type="button" class="btn btn--ghost" id="fullscreenBtn">Fullscreen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / edit video modal -->
+  <div class="modal" id="editModal" hidden>
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__panel">
+      <button type="button" class="modal__close" data-close-modal aria-label="Close">&times;</button>
+      <h3 class="modal__title" id="editModalTitle">Add video</h3>
+      <form id="editForm">
+        <input type="hidden" id="editId" name="id" />
+        <input type="hidden" id="editFeed" name="feed" />
+        <div class="form-group">
+          <label for="editTitle">Title</label>
+          <input type="text" id="editTitle" required placeholder="Video title" />
+        </div>
+        <div class="form-group">
+          <label for="editDesc">Description</label>
+          <textarea id="editDesc" rows="3" required placeholder="Short description for search"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="editUrl">Video URL <span class="label-hint">(link from web)</span></label>
+          <input type="url" id="editUrl" placeholder="https://example.com/video.mp4" />
+        </div>
+        <div class="form-group">
+          <label for="editFile">Or upload a file</label>
+          <input type="file" id="editFile" accept="video/*" />
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--ghost" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn--primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="videos-data.js?v=4"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>
