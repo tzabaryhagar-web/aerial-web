@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Aeriarl's Bank — discover, track, and combine aerial silks, hoop, and hammock skills." />
+  <meta name="base-path" content="/aerial-web/" />
   <title>Aeriarl's Bank | Aerial Acrobatics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <div class="noise" aria-hidden="true"></div>
@@ -43,7 +44,7 @@
   <main>
     <section class="hero" id="hero">
       <div class="container hero__inner">
-        <div class="hero__content reveal">
+        <div class="hero__content">
           <p class="hero__eyebrow">
             <span class="hero__status"></span>
             Aerial silks · Hoop · Hammock
@@ -61,20 +62,20 @@
           </div>
           <div class="hero__stats">
             <div class="hero__stat">
-              <span class="hero__stat-num" data-count="4">0</span>
+              <span class="hero__stat-num">4</span>
               <span class="hero__stat-label">Trick Videos</span>
             </div>
             <div class="hero__stat">
-              <span class="hero__stat-num" data-count="4">0</span>
+              <span class="hero__stat-num">4</span>
               <span class="hero__stat-label">Projects</span>
             </div>
             <div class="hero__stat">
-              <span class="hero__stat-num" data-count="3">0</span>
+              <span class="hero__stat-num">3</span>
               <span class="hero__stat-label">Apparatus</span>
             </div>
           </div>
         </div>
-        <div class="hero__visual reveal reveal--delay">
+        <div class="hero__visual">
           <div class="hero__card">
             <div class="hero__card-icon">✦</div>
             <h3>Silks · Hoop · Hammock</h3>
@@ -90,11 +91,11 @@
 
     <section class="section about" id="about">
       <div class="container">
-        <div class="section__header reveal">
+        <div class="section__header">
           <span class="section__tag">01 — About</span>
           <h2 class="section__title">The Bank</h2>
         </div>
-        <div class="about__banner reveal">
+        <div class="about__banner">
           <img
             src="assets/images/about-bg.jpeg"
             alt="Aerial acrobatics"
@@ -116,43 +117,133 @@
 
     <section class="section feed-section" id="tricks">
       <div class="container">
-        <div class="section__header reveal">
+        <div class="section__header">
           <span class="section__tag">02 — Tricks</span>
           <h2 class="section__title">Trick Library</h2>
           <p class="section__subtitle">Swipe through aerial moves — tap a video to play, read the description below.</p>
         </div>
-        <div class="feed-toolbar reveal">
+        <div class="feed-toolbar">
           <div class="search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input type="search" id="tricksSearch" placeholder="Search tricks by description..." autocomplete="off" />
           </div>
         </div>
-        <div class="video-feed" id="tricksFeed" aria-label="Tricks video feed"></div>
+        <div class="video-feed" id="tricksFeed" aria-label="Tricks video feed">
+          <article class="video-card" data-search-text="cube sequence aerial silks cube wrap stacked poses foundation combining silk tricks silks cube wraps">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Cube Sequence">
+              <video src="assets/videos/cube.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Cube Sequence</h3>
+              <p class="video-card__desc">Aerial silks cube wrap and stacked poses — foundation for combining silk tricks.</p>
+              <div class="video-card__tags"><span>silks</span><span>cube</span><span>wraps</span></div>
+            </div>
+          </article>
+          <article class="video-card" data-search-text="trapeze flow trapeze transitions beats release work dynamic routine building trapeze transitions beats">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Trapeze Flow">
+              <video src="assets/videos/trapeze.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Trapeze Flow</h3>
+              <p class="video-card__desc">Trapeze transitions, beats, and release work for dynamic routine building.</p>
+              <div class="video-card__tags"><span>trapeze</span><span>transitions</span><span>beats</span></div>
+            </div>
+          </article>
+          <article class="video-card" data-search-text="triple hoop lyra triple hoop combinations spins mounts linking aerial hoop tricks hoop lyra spins">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Triple Hoop">
+              <video src="assets/videos/triple-hoop.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Triple Hoop</h3>
+              <p class="video-card__desc">Lyra triple hoop combinations — spins, mounts, and linking aerial hoop tricks.</p>
+              <div class="video-card__tags"><span>hoop</span><span>lyra</span><span>spins</span></div>
+            </div>
+          </article>
+          <article class="video-card" data-search-text="mixed apparatus silks hoop hammock skills woven together inspiration next combo silks hoop hammock combo">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Mixed Apparatus">
+              <video src="assets/videos/video-project-1.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Mixed Apparatus</h3>
+              <p class="video-card__desc">Silks, hoop, and hammock skills woven together — inspiration for your next combo.</p>
+              <div class="video-card__tags"><span>silks</span><span>hoop</span><span>hammock</span><span>combo</span></div>
+            </div>
+          </article>
+        </div>
         <p class="feed-empty" id="tricksEmpty" hidden>No tricks match your search.</p>
       </div>
     </section>
 
     <section class="section feed-section feed-section--alt" id="projects">
       <div class="container">
-        <div class="section__header reveal">
+        <div class="section__header">
           <span class="section__tag">03 — Projects</span>
           <h2 class="section__title">Performance Library</h2>
           <p class="section__subtitle">Full routines and projects from the aerial acrobatics collection.</p>
         </div>
-        <div class="feed-toolbar reveal">
+        <div class="feed-toolbar">
           <div class="search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
             <input type="search" id="projectsSearch" placeholder="Search projects by description..." autocomplete="off" />
           </div>
         </div>
-        <div class="video-feed" id="projectsFeed" aria-label="Projects video feed"></div>
+        <div class="video-feed" id="projectsFeed" aria-label="Projects video feed">
+          <article class="video-card" data-search-text="cube performance full cube routine aerial silks jennifer acrobatics library silks performance">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Cube Performance">
+              <video src="assets/videos/cube.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Cube — Performance</h3>
+              <p class="video-card__desc">Full cube routine on aerial silks from the Jennifer acrobatics library.</p>
+              <div class="video-card__tags"><span>silks</span><span>performance</span></div>
+            </div>
+          </article>
+          <article class="video-card" data-search-text="trapeze performance trapeze act showcase flowing sequences aerial strength elements trapeze performance">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Trapeze Performance">
+              <video src="assets/videos/trapeze.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Trapeze — Performance</h3>
+              <p class="video-card__desc">Trapeze act showcase with flowing sequences and aerial strength elements.</p>
+              <div class="video-card__tags"><span>trapeze</span><span>performance</span></div>
+            </div>
+          </article>
+          <article class="video-card" data-search-text="triple hoop performance triple aerial hoop project choreography trick combinations lyra hoop choreography">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Triple Hoop Performance">
+              <video src="assets/videos/triple-hoop.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Triple Hoop — Performance</h3>
+              <p class="video-card__desc">Triple aerial hoop project — choreography and trick combinations on lyra.</p>
+              <div class="video-card__tags"><span>hoop</span><span>choreography</span></div>
+            </div>
+          </article>
+          <article class="video-card" data-search-text="video project 1 edited aerial acrobatics compilation silks hoop hammock highlights compilation routine">
+            <div class="video-card__media" role="button" tabindex="0" aria-label="Play Video Project 1">
+              <video src="assets/videos/video-project-1.mp4" preload="metadata" playsinline loop muted></video>
+              <div class="video-card__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+            </div>
+            <div class="video-card__body">
+              <h3 class="video-card__title">Video Project 1</h3>
+              <p class="video-card__desc">Edited aerial acrobatics compilation — silks, hoop, and hammock highlights.</p>
+              <div class="video-card__tags"><span>compilation</span><span>routine</span></div>
+            </div>
+          </article>
+        </div>
         <p class="feed-empty" id="projectsEmpty" hidden>No projects match your search.</p>
       </div>
     </section>
 
     <section class="section contact" id="contact">
       <div class="container">
-        <div class="contact__wrapper reveal">
+        <div class="contact__wrapper">
           <div class="contact__info">
             <span class="section__tag">04 — Contact</span>
             <h2 class="section__title">Get in Touch</h2>
@@ -196,7 +287,6 @@
     </div>
   </footer>
 
-  <script src="videos-data.js"></script>
-  <script src="script.js"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
