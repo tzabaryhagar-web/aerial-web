@@ -592,6 +592,7 @@ button, input, textarea { font: inherit; color: inherit; border: none; backgroun
   height: 100%;
   object-fit: cover;
   pointer-events: none;
+  background: #1a1a22;
 }
 
 .video-card__play-btn,
@@ -791,7 +792,69 @@ button, input, textarea { font: inherit; color: inherit; border: none; backgroun
   color: var(--text-muted);
 }
 
+.footer__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.footer__admin-link {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity var(--transition);
+}
+
+.footer__admin-link:hover { opacity: 1; }
+
+body.is-admin .footer__admin-link { opacity: 1; }
+
 .footer__top:hover { color: var(--accent); }
+
+/* Admin-only controls hidden for visitors */
+body:not(.is-admin) .admin-only {
+  display: none !important;
+}
+
+.admin-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.6rem;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-radius: 999px;
+}
+
+.btn--danger {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: auto;
+}
+
+.btn--danger:hover {
+  background: rgba(248, 113, 113, 0.25);
+}
+
+.form-group--optional[hidden] {
+  display: none;
+}
+
+.modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1rem;
+}
 
 /* ===== Modals ===== */
 .modal[hidden] { display: none; }

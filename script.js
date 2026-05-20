@@ -5,36 +5,94 @@
   const STORAGE_PERFORMANCES = "aeriarl-custom-performances";
   const STORAGE_TRICKS_OVR = "aeriarl-tricks-overrides";
   const STORAGE_PERF_OVR = "aeriarl-performances-overrides";
+  const STORAGE_HIDDEN_TRICKS = "aeriarl-hidden-tricks";
+  const STORAGE_HIDDEN_PERF = "aeriarl-hidden-performances";
+  const STORAGE_ADMIN = "aeriarl-admin-session";
   const IDB_NAME = "aeriarl-video-blobs";
   const IDB_STORE = "blobs";
 
   let blobUrlCache = new Map();
+  let editingItem = null;
+  let playerModal, playerVideo;
 
   document.addEventListener("DOMContentLoaded", init);
 
+  /* ---------- Admin (private link: ?admin=YOUR_KEY) ---------- */
+  function checkAdminFromUrl() {
+    const key = new URLSearchParams(location.search).get("admin");
+    if (key && key === SITE_ADMIN_KEY) {
+      sessionStorage.setItem(STORAGE_ADMIN, "1");
+      const url = new URL(location.href);
+      url.searchParams.delete("admin");
+      history.replaceState({}, "", url.pathname + url.hash);
+    }
+  }
+
+  function isAdmin() {
+    return sessionStorage.getItem(STORAGE_ADMIN) === "1";
+  }
+
+  function applyAdminUI() {
+    document.body.classList.toggle("is-admin", isAdmin());
+    const badge = document.getElementById("adminBadge");
+    if (badge) badge.hidden = !isAdmin();
+  }
+
+  function promptAdminLogin() {
+    const entered = prompt("Enter admin key:");
+    if (entered === SITE_ADMIN_KEY) {
+      sessionStorage.setItem(STORAGE_ADMIN, "1");
+      applyAdminUI();
+      refreshAllFeeds();
+      alert("Admin mode enabled on this device.");
+    } else if (entered !== null) {
+      alert("Incorrect key.");
+    }
+  }
+
+  function adminLogout() {
+    sessionStorage.removeItem(STORAGE_ADMIN);
+    applyAdminUI();
+    refreshAllFeeds();
+  }
+
+  /* ---------- Init ---------- */
   async function init() {
+    checkAdminFromUrl();
+    applyAdminUI();
+
     initTheme();
     initNav();
     initContact();
     initModals();
     initPlayer();
 
-    const tricks = await getFeedItems("tricks");
-    const performances = await getFeedItems("performances");
-
-    renderFeed("tricksFeed", tricks, "tricks");
-    renderFeed("performancesFeed", performances, "performances");
-
-    initFeedSearch("tricksFeed", "tricksSearch", "tricksEmpty");
-    initFeedSearch("performancesFeed", "performancesSearch", "performancesEmpty");
+    document.getElementById("adminLoginBtn")?.addEventListener("click", () => {
+      if (isAdmin()) {
+        if (confirm("Leave admin mode on this device?")) adminLogout();
+      } else {
+        promptAdminLogin();
+      }
+    });
 
     document.getElementById("addTrickBtn")?.addEventListener("click", () => openEditModal("tricks"));
     document.getElementById("addPerformanceBtn")?.addEventListener("click", () => openEditModal("performances"));
-
     document.getElementById("editForm")?.addEventListener("submit", handleEditSubmit);
+    document.getElementById("deleteVideoBtn")?.addEventListener("click", handleDeleteVideo);
+
+    await refreshAllFeeds();
 
     const yearEl = document.getElementById("year");
     if (yearEl) yearEl.textContent = new Date().getFullYear();
+  }
+
+  async function refreshAllFeeds() {
+    const tricks = await getFeedItems("tricks");
+    const performances = await getFeedItems("performances");
+    await renderFeed("tricksFeed", tricks, "tricks");
+    await renderFeed("performancesFeed", performances, "performances");
+    initFeedSearch("tricksFeed", "tricksSearch", "tricksEmpty");
+    initFeedSearch("performancesFeed", "performancesSearch", "performancesEmpty");
   }
 
   /* ---------- Storage ---------- */
@@ -50,6 +108,20 @@
   function setCustom(feed, items) {
     const key = feed === "tricks" ? STORAGE_TRICKS : STORAGE_PERFORMANCES;
     localStorage.setItem(key, JSON.stringify(items));
+  }
+
+  function getHidden(feed) {
+    const key = feed === "tricks" ? STORAGE_HIDDEN_TRICKS : STORAGE_HIDDEN_PERF;
+    try {
+      return JSON.parse(localStorage.getItem(key) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function setHidden(feed, ids) {
+    const key = feed === "tricks" ? STORAGE_HIDDEN_TRICKS : STORAGE_HIDDEN_PERF;
+    localStorage.setItem(key, JSON.stringify(ids));
   }
 
   function getOverrides(feed) {
@@ -68,22 +140,26 @@
 
   async function getFeedItems(feed) {
     const defaults = feed === "tricks" ? DEFAULT_TRICKS : DEFAULT_PERFORMANCES;
+    const hidden = getHidden(feed);
     const overrides = getOverrides(feed);
-    const mergedDefaults = defaults.map((item) =>
-      overrides[item.id] ? { ...item, ...overrides[item.id] } : item
-    );
-    const custom = getCustom(feed);
+    const mergedDefaults = defaults
+      .map((item) => (overrides[item.id] ? { ...item, ...overrides[item.id] } : item))
+      .filter((item) => !hidden.includes(item.id));
+    const custom = getCustom(feed).filter((item) => !hidden.includes(item.id));
     return [...mergedDefaults, ...custom];
   }
 
+  function defaultIds(feed) {
+    return (feed === "tricks" ? DEFAULT_TRICKS : DEFAULT_PERFORMANCES).map((d) => d.id);
+  }
+
+  /* ---------- IndexedDB ---------- */
   function openIdb() {
     return new Promise((resolve, reject) => {
       const req = indexedDB.open(IDB_NAME, 1);
       req.onerror = () => reject(req.error);
       req.onsuccess = () => resolve(req.result);
-      req.onupgradeneeded = (e) => {
-        e.target.result.createObjectStore(IDB_STORE);
-      };
+      req.onupgradeneeded = (e) => e.target.result.createObjectStore(IDB_STORE);
     });
   }
 
@@ -92,6 +168,16 @@
     return new Promise((resolve, reject) => {
       const tx = db.transaction(IDB_STORE, "readwrite");
       tx.objectStore(IDB_STORE).put(blob, id);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  async function deleteBlob(id) {
+    const db = await openIdb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).delete(id);
       tx.oncomplete = () => resolve();
       tx.onerror = () => reject(tx.error);
     });
@@ -129,8 +215,7 @@
     const regexMatch = query.match(/^\/(.+)\/([gimsuy]*)$/);
     if (regexMatch) {
       try {
-        const re = new RegExp(regexMatch[1], regexMatch[2]);
-        return re.test(text);
+        return new RegExp(regexMatch[1], regexMatch[2]).test(text);
       } catch {
         return false;
       }
@@ -147,34 +232,56 @@
     const empty = document.getElementById(emptyId);
     if (!feed || !search) return;
 
-    function filterFeed() {
+    const handler = () => {
       const q = search.value.trim();
-      const cards = feed.querySelectorAll(".video-card");
       let visible = 0;
-
-      cards.forEach((card) => {
+      feed.querySelectorAll(".video-card").forEach((card) => {
         const title = card.querySelector(".video-card__title")?.textContent || "";
         const desc = card.querySelector(".video-card__desc")?.textContent || "";
         const match = matchesSearch(q, title, desc);
         card.classList.toggle("is-hidden", !match);
         if (match) visible++;
       });
-
       if (empty) empty.hidden = visible > 0;
-    }
+    };
 
-    search.addEventListener("input", filterFeed);
+    search.removeEventListener("input", search._filterHandler);
+    search._filterHandler = handler;
+    search.addEventListener("input", handler);
   }
 
-  /* ---------- Render feeds ---------- */
+  /* ---------- Video preview (mobile fix) ---------- */
+  function setupVideoPreview(video) {
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.preload = "auto";
+
+    const seekToPreview = () => {
+      if (!video.duration || video.duration === Infinity) return;
+      const t = Math.min(0.5, video.duration * 0.03);
+      if (video.currentTime < 0.1) video.currentTime = t;
+    };
+
+    video.addEventListener("loadedmetadata", seekToPreview, { once: true });
+    video.addEventListener("loadeddata", () => {
+      seekToPreview();
+      video.pause();
+    });
+
+    video.addEventListener("seeked", () => {
+      if (!video.paused && !video.closest(".modal")) video.pause();
+    });
+  }
+
+  /* ---------- Render ---------- */
   async function renderFeed(feedId, items, feedType) {
     const feed = document.getElementById(feedId);
     if (!feed) return;
     feed.innerHTML = "";
-
     for (const item of items) {
-      const card = await buildCard(item, feedType);
-      feed.appendChild(card);
+      feed.appendChild(await buildCard(item, feedType));
     }
   }
 
@@ -186,51 +293,49 @@
     const src = await resolveVideoSrc(item);
     const safeTitle = escapeHtml(item.title);
     const safeDesc = escapeHtml(item.description);
-    const tagsHtml = (item.tags || [])
-      .map((t) => `<span>${escapeHtml(t)}</span>`)
-      .join("");
+    const tagsHtml = (item.tags || []).map((t) => `<span>${escapeHtml(t)}</span>`).join("");
+    const admin = isAdmin();
 
     card.innerHTML = `
       <div class="video-card__media">
-        <video src="${escapeAttr(src)}" preload="metadata" playsinline muted poster=""></video>
+        <video preload="auto" playsinline muted webkit-playsinline src="${escapeAttr(src)}"></video>
         <button type="button" class="video-card__play-btn" aria-label="Play ${safeTitle}">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </button>
-        <button type="button" class="video-card__fs-btn" aria-label="Play fullscreen" title="Fullscreen">⛶</button>
+        <button type="button" class="video-card__fs-btn" aria-label="Fullscreen" title="Fullscreen">⛶</button>
       </div>
       <div class="video-card__body">
         <div class="video-card__head">
           <h3 class="video-card__title">${safeTitle}</h3>
-          <button type="button" class="video-card__edit" aria-label="Edit" title="Edit">✎</button>
+          ${admin ? `<button type="button" class="video-card__edit" aria-label="Edit" title="Edit">✎</button>` : ""}
         </div>
         <p class="video-card__desc">${safeDesc}</p>
         <div class="video-card__tags">${tagsHtml}</div>
       </div>
     `;
 
+    const video = card.querySelector("video");
+    if (video && src) setupVideoPreview(video);
+
     const playBtn = card.querySelector(".video-card__play-btn");
     const fsBtn = card.querySelector(".video-card__fs-btn");
-    const editBtn = card.querySelector(".video-card__edit");
-    const video = card.querySelector("video");
 
-    playBtn.addEventListener("click", (e) => {
+    playBtn?.addEventListener("click", (e) => {
       e.stopPropagation();
       openPlayer(src, item.title);
     });
 
-    fsBtn.addEventListener("click", (e) => {
+    fsBtn?.addEventListener("click", (e) => {
       e.stopPropagation();
       openPlayer(src, item.title, true);
     });
 
-    card.querySelector(".video-card__media").addEventListener("click", (e) => {
-      if (e.target.closest(".video-card__edit")) return;
-      if (e.target.closest(".video-card__fs-btn")) return;
-      if (e.target.closest(".video-card__play-btn")) return;
+    card.querySelector(".video-card__media")?.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
       openPlayer(src, item.title);
     });
 
-    editBtn.addEventListener("click", (e) => {
+    card.querySelector(".video-card__edit")?.addEventListener("click", (e) => {
       e.stopPropagation();
       openEditModal(feedType, item);
     });
@@ -253,26 +358,22 @@
     return String(s).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
-  /* ---------- Video player ---------- */
-  let playerModal, playerVideo, fullscreenBtn;
-
+  /* ---------- Player ---------- */
   function initPlayer() {
     playerModal = document.getElementById("playerModal");
     playerVideo = document.getElementById("playerVideo");
-    fullscreenBtn = document.getElementById("fullscreenBtn");
-
-    fullscreenBtn?.addEventListener("click", () => {
+    document.getElementById("fullscreenBtn")?.addEventListener("click", () => {
       const el = playerVideo;
-      if (el.requestFullscreen) el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-      else if (el.webkitEnterFullscreen) el.webkitEnterFullscreen();
+      if (el?.requestFullscreen) el.requestFullscreen();
+      else if (el?.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      else if (el?.webkitEnterFullscreen) el.webkitEnterFullscreen();
     });
   }
 
   function openPlayer(src, title, autoFullscreen) {
     if (!src || !playerModal || !playerVideo) return;
-
     playerVideo.src = src;
+    playerVideo.muted = false;
     playerVideo.currentTime = 0;
     playerModal.hidden = false;
     document.body.style.overflow = "hidden";
@@ -302,20 +403,14 @@
     document.body.style.overflow = "";
   }
 
-  /* ---------- Edit modal ---------- */
-  let editModal, editForm, editingItem = null;
-
+  /* ---------- Edit / delete ---------- */
   function initModals() {
-    editModal = document.getElementById("editModal");
-    editForm = document.getElementById("editForm");
-
     document.querySelectorAll("[data-close-modal]").forEach((el) => {
       el.addEventListener("click", () => {
         closeEditModal();
         closePlayer();
       });
     });
-
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         closeEditModal();
@@ -325,89 +420,125 @@
   }
 
   function openEditModal(feed, item) {
+    if (!isAdmin()) {
+      promptAdminLogin();
+      return;
+    }
+
     editingItem = item || null;
-    document.getElementById("editModalTitle").textContent = item ? "Edit video" : "Add video";
+    const isEdit = Boolean(item);
+
+    document.getElementById("editModalTitle").textContent = isEdit ? "Edit video" : "Add video";
     document.getElementById("editId").value = item?.id || `custom-${Date.now()}`;
     document.getElementById("editFeed").value = feed;
     document.getElementById("editTitle").value = item?.title || "";
     document.getElementById("editDesc").value = item?.description || "";
-    document.getElementById("editUrl").value = item?.src && !item?.blobId ? item.src : "";
+    document.getElementById("editUrl").value = "";
     document.getElementById("editFile").value = "";
-    editModal.hidden = false;
+
+    const mediaGroup = document.getElementById("editMediaGroup");
+    const fileGroup = document.getElementById("editFileGroup");
+    const deleteBtn = document.getElementById("deleteVideoBtn");
+
+    if (isEdit) {
+      mediaGroup.hidden = true;
+      fileGroup.hidden = true;
+      deleteBtn.hidden = false;
+    } else {
+      mediaGroup.hidden = false;
+      fileGroup.hidden = false;
+      deleteBtn.hidden = true;
+    }
+
+    document.getElementById("editModal").hidden = false;
     document.body.style.overflow = "hidden";
   }
 
   function closeEditModal() {
-    if (editModal) editModal.hidden = true;
+    document.getElementById("editModal").hidden = true;
     editingItem = null;
     if (playerModal?.hidden) document.body.style.overflow = "";
   }
 
   async function handleEditSubmit(e) {
     e.preventDefault();
+    if (!isAdmin()) return;
 
     const id = document.getElementById("editId").value;
     const feed = document.getElementById("editFeed").value;
     const title = document.getElementById("editTitle").value.trim();
     const description = document.getElementById("editDesc").value.trim();
     const url = document.getElementById("editUrl").value.trim();
-    const fileInput = document.getElementById("editFile");
-    const file = fileInput.files?.[0];
+    const file = document.getElementById("editFile").files?.[0];
 
     if (!title || !description) return;
 
-    let item = {
-      id,
-      title,
-      description,
-      tags: [],
-      custom: true,
-    };
+    const defs = defaultIds(feed);
+    const isDefault = defs.includes(id);
+    const isEdit = Boolean(editingItem);
 
+    if (isEdit) {
+      if (isDefault) {
+        const overrides = getOverrides(feed);
+        overrides[id] = { title, description };
+        setOverrides(feed, overrides);
+      } else {
+        const custom = getCustom(feed);
+        const idx = custom.findIndex((c) => c.id === id);
+        if (idx >= 0) {
+          custom[idx] = { ...custom[idx], title, description };
+          setCustom(feed, custom);
+        }
+      }
+      closeEditModal();
+      await refreshAllFeeds();
+      return;
+    }
+
+    if (!file && !url) {
+      alert("Add a video URL or upload a file for new videos.");
+      return;
+    }
+
+    const item = { id, title, description, tags: [], custom: true };
     if (file) {
       const blobId = `blob-${id}`;
       await saveBlob(blobId, file);
       item.blobId = blobId;
-      item.src = null;
-    } else if (url) {
-      item.src = url;
-    } else if (editingItem) {
-      item.src = editingItem.src || null;
-      item.blobId = editingItem.blobId || null;
     } else {
-      alert("Please add a video URL or upload a file.");
-      return;
+      item.src = url;
     }
 
     const custom = getCustom(feed);
-    const idx = custom.findIndex((c) => c.id === id);
-    const defaultIds = (feed === "tricks" ? DEFAULT_TRICKS : DEFAULT_PERFORMANCES).map((d) => d.id);
-
-    if (defaultIds.includes(id) && !file && !url) {
-      const overrides = getOverrides(feed);
-      overrides[id] = { title, description };
-      setOverrides(feed, overrides);
-    } else if (defaultIds.includes(id) && (file || url)) {
-      item.id = `custom-${id}-${Date.now()}`;
-      custom.push(item);
-      setCustom(feed, custom);
-    } else if (idx >= 0) {
-      custom[idx] = item;
-      setCustom(feed, custom);
-    } else {
-      custom.push(item);
-      setCustom(feed, custom);
-    }
+    custom.push(item);
+    setCustom(feed, custom);
     closeEditModal();
+    await refreshAllFeeds();
+  }
 
-    const items = await getFeedItems(feed);
-    const feedId = feed === "tricks" ? "tricksFeed" : "performancesFeed";
-    await renderFeed(feedId, items, feed);
+  async function handleDeleteVideo() {
+    if (!isAdmin() || !editingItem) return;
+    if (!confirm(`Remove "${editingItem.title}" from the library?`)) return;
 
-    const searchId = feed === "tricks" ? "tricksSearch" : "performancesSearch";
-    const emptyId = feed === "tricks" ? "tricksEmpty" : "performancesEmpty";
-    initFeedSearch(feedId, searchId, emptyId);
-    document.getElementById(searchId)?.dispatchEvent(new Event("input"));
+    const feed = document.getElementById("editFeed").value;
+    const id = editingItem.id;
+    const defs = defaultIds(feed);
+
+    if (defs.includes(id)) {
+      const hidden = getHidden(feed);
+      if (!hidden.includes(id)) hidden.push(id);
+      setHidden(feed, hidden);
+    } else {
+      const custom = getCustom(feed).filter((c) => c.id !== id);
+      setCustom(feed, custom);
+      if (editingItem.blobId) {
+        await deleteBlob(editingItem.blobId);
+        blobUrlCache.delete(editingItem.blobId);
+      }
+    }
+
+    closeEditModal();
+    await refreshAllFeeds();
   }
 
   /* ---------- Theme & nav ---------- */
