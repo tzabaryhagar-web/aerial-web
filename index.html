@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <div class="site-bg" aria-hidden="true"></div>
@@ -21,6 +21,7 @@
       <ul class="nav__links" id="navLinks">
         <li><a href="#about" class="nav__link">About</a></li>
         <li><a href="#tricks" class="nav__link">Tricks</a></li>
+        <li><a href="#favorites" class="nav__link">Favorites</a></li>
         <li><a href="#performances" class="nav__link">Performance Library</a></li>
         <li><a href="#contact" class="nav__link nav__link--cta">Contact</a></li>
       </ul>
@@ -75,6 +76,10 @@
             inspiration for your next routine, performance, or training session.
           </p>
         </div>
+        <div class="safety-disclaimer">
+          <span class="safety-disclaimer__icon" aria-hidden="true">⚠</span>
+          <p class="safety-disclaimer__text">We encourage you to learn — please take care of yourself and try only what you're capable of with responsibility.</p>
+        </div>
       </div>
     </section>
 
@@ -90,6 +95,22 @@
             <input type="search" id="tricksSearch" placeholder="Search title or description (supports /regex/)" autocomplete="off" />
           </div>
           <button type="button" class="btn-add admin-only" id="addTrickBtn" aria-label="Add trick video">+</button>
+        </div>
+        <div class="filter-bar" id="tricksFilterBar">
+          <div class="filter-group">
+            <span class="filter-group__label">Level</span>
+            <button type="button" class="filter-chip" data-filter-group="level" data-filter-value="beginner">Beginner</button>
+            <button type="button" class="filter-chip" data-filter-group="level" data-filter-value="intermediate">Intermediate</button>
+            <button type="button" class="filter-chip" data-filter-group="level" data-filter-value="expert">Expert</button>
+          </div>
+          <div class="filter-group">
+            <span class="filter-group__label">Element</span>
+            <button type="button" class="filter-chip" data-filter-group="element" data-filter-value="hoop">Hoop</button>
+            <button type="button" class="filter-chip" data-filter-group="element" data-filter-value="silks">Silks</button>
+            <button type="button" class="filter-chip" data-filter-group="element" data-filter-value="trapeze">Trapeze</button>
+            <button type="button" class="filter-chip" data-filter-group="element" data-filter-value="straps">Straps</button>
+            <button type="button" class="filter-chip" data-filter-group="element" data-filter-value="hammock">Hammock</button>
+          </div>
         </div>
         <div class="video-feed" id="tricksFeed" aria-label="Tricks video feed"></div>
         <p class="feed-empty" id="tricksEmpty" hidden>No tricks match your search.</p>
@@ -111,6 +132,17 @@
         </div>
         <div class="video-feed" id="performancesFeed" aria-label="Performance Library video feed"></div>
         <p class="feed-empty" id="performancesEmpty" hidden>No performances match your search.</p>
+      </div>
+    </section>
+
+    <section class="section feed-section" id="favorites">
+      <div class="container">
+        <div class="section__header">
+          <h2 class="section__title">Favorites ♥</h2>
+          <p class="section__subtitle">Your saved tricks and performances.</p>
+        </div>
+        <div class="video-feed" id="favoritesFeed" aria-label="Favorites video feed"></div>
+        <p class="feed-empty" id="favoritesEmpty">No favorites yet — tap the heart icon on any video to save it here.</p>
       </div>
     </section>
 
@@ -179,6 +211,19 @@
           <label for="editDesc">Description</label>
           <textarea id="editDesc" rows="3" required placeholder="Short description for search"></textarea>
         </div>
+        <div class="form-group">
+          <label for="editLevel">Level <span class="label-hint">(optional)</span></label>
+          <select id="editLevel">
+            <option value="">— Not specified —</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="expert">Expert</option>
+          </select>
+        </div>
+        <div class="form-group form-group--optional" id="editTagsGroup">
+          <label for="editTags">Element tags <span class="label-hint">(comma-separated, e.g. silks, hoop)</span></label>
+          <input type="text" id="editTags" placeholder="silks, hoop" />
+        </div>
         <div class="form-group form-group--optional" id="editMediaGroup">
           <label for="editUrl">Video URL <span class="label-hint">(only when adding a new video)</span></label>
           <input type="text" id="editUrl" placeholder="https://example.com/video.mp4" />
@@ -196,7 +241,7 @@
     </div>
   </div>
 
-  <script src="videos-data.js?v=5"></script>
-  <script src="script.js?v=5"></script>
+  <script src="videos-data.js?v=6"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>

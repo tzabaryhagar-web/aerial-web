@@ -8,6 +8,7 @@ const DEFAULT_TRICKS = [
     title: "Trick — IMG 0639",
     description: "Aerial trick practice — silks and transitions.",
     tags: ["silks"],
+    level: "beginner",
   },
   {
     id: "trick-0846",
@@ -15,6 +16,7 @@ const DEFAULT_TRICKS = [
     title: "Trick — IMG 0846",
     description: "Extended trick sequence for routine building.",
     tags: ["hoop"],
+    level: "intermediate",
   },
   {
     id: "trick-7636",
@@ -22,6 +24,7 @@ const DEFAULT_TRICKS = [
     title: "Trick — IMG 7636",
     description: "Mount and flow work on aerial apparatus.",
     tags: ["hammock"],
+    level: "intermediate",
   },
   {
     id: "trick-9046",
@@ -29,6 +32,7 @@ const DEFAULT_TRICKS = [
     title: "Trick — IMG 9046",
     description: "Combination move — save for your next combo.",
     tags: ["straps"],
+    level: "expert",
   },
 ];
 

@@ -8,12 +8,15 @@
   const STORAGE_HIDDEN_TRICKS = "aeriarl-hidden-tricks";
   const STORAGE_HIDDEN_PERF = "aeriarl-hidden-performances";
   const STORAGE_ADMIN = "aeriarl-admin-session";
+  const STORAGE_FAVORITES = "aeriarl-favorites";
   const IDB_NAME = "aeriarl-video-blobs";
   const IDB_STORE = "blobs";
 
   let blobUrlCache = new Map();
   let editingItem = null;
   let playerModal, playerVideo;
+  const activeLevelFilters = new Set();
+  const activeElementFilters = new Set();
 
   document.addEventListener("DOMContentLoaded", init);
 
@@ -80,6 +83,9 @@
     document.getElementById("editForm")?.addEventListener("submit", handleEditSubmit);
     document.getElementById("deleteVideoBtn")?.addEventListener("click", handleDeleteVideo);
 
+    initTricksFilters();
+    initFeedSearch("performancesFeed", "performancesSearch", "performancesEmpty");
+
     await refreshAllFeeds();
 
     const yearEl = document.getElementById("year");
@@ -91,8 +97,8 @@
     const performances = await getFeedItems("performances");
     await renderFeed("tricksFeed", tricks, "tricks");
     await renderFeed("performancesFeed", performances, "performances");
-    initFeedSearch("tricksFeed", "tricksSearch", "tricksEmpty");
-    initFeedSearch("performancesFeed", "performancesSearch", "performancesEmpty");
+    await renderFavoritesFeed();
+    applyTricksFilter();
   }
 
   /* ---------- Storage ---------- */
@@ -250,26 +256,34 @@
     search.addEventListener("input", handler);
   }
 
-  /* ---------- Video preview (mobile fix) ---------- */
+  /* ---------- Video preview (iOS compatible) ---------- */
   function setupVideoPreview(video) {
     video.muted = true;
     video.playsInline = true;
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
-    video.preload = "auto";
+    video.setAttribute("x-webkit-airplay", "allow");
 
-    const seekToPreview = () => {
+    const seekToFrame = () => {
       if (!video.duration || video.duration === Infinity) return;
       const t = Math.min(0.5, video.duration * 0.03);
       if (video.currentTime < 0.1) video.currentTime = t;
     };
 
-    video.addEventListener("loadedmetadata", seekToPreview, { once: true });
-    video.addEventListener("loadeddata", () => {
-      seekToPreview();
-      video.pause();
-    });
+    // iOS requires play() to be called before seeking shows a frame
+    const showPreviewFrame = () => {
+      video
+        .play()
+        .then(() => {
+          seekToFrame();
+          requestAnimationFrame(() => video.pause());
+        })
+        .catch(() => {
+          seekToFrame();
+        });
+    };
 
+    video.addEventListener("loadedmetadata", showPreviewFrame, { once: true });
     video.addEventListener("seeked", () => {
       if (!video.paused && !video.closest(".modal")) video.pause();
     });
@@ -289,16 +303,19 @@
     const card = document.createElement("article");
     card.className = "video-card";
     card.dataset.id = item.id;
+    card.dataset.level = item.level || "";
+    card.dataset.elements = (item.tags || []).join(",");
 
     const src = await resolveVideoSrc(item);
     const safeTitle = escapeHtml(item.title);
     const safeDesc = escapeHtml(item.description);
     const tagsHtml = (item.tags || []).map((t) => `<span>${escapeHtml(t)}</span>`).join("");
     const admin = isAdmin();
+    const isFav = getFavorites().has(item.id);
 
     card.innerHTML = `
       <div class="video-card__media">
-        <video preload="auto" playsinline muted webkit-playsinline src="${escapeAttr(src)}"></video>
+        <video preload="metadata" playsinline muted autoplay webkit-playsinline x-webkit-airplay="allow" src="${escapeAttr(src)}"></video>
         <button type="button" class="video-card__play-btn" aria-label="Play ${safeTitle}">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </button>
@@ -307,6 +324,7 @@
       <div class="video-card__body">
         <div class="video-card__head">
           <h3 class="video-card__title">${safeTitle}</h3>
+          <button type="button" class="video-card__fav${isFav ? " video-card__fav--active" : ""}" aria-label="${isFav ? "Remove from favorites" : "Add to favorites"}" data-fav-id="${escapeAttr(item.id)}">${isFav ? "♥" : "♡"}</button>
           ${admin ? `<button type="button" class="video-card__edit" aria-label="Edit" title="Edit">✎</button>` : ""}
         </div>
         <p class="video-card__desc">${safeDesc}</p>
@@ -340,12 +358,124 @@
       openEditModal(feedType, item);
     });
 
+    card.querySelector(".video-card__fav")?.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      const isNowFav = toggleFavorite(item.id);
+      document.querySelectorAll(`.video-card__fav[data-fav-id="${item.id}"]`).forEach((btn) => {
+        btn.classList.toggle("video-card__fav--active", isNowFav);
+        btn.textContent = isNowFav ? "♥" : "♡";
+        btn.setAttribute("aria-label", isNowFav ? "Remove from favorites" : "Add to favorites");
+      });
+      await renderFavoritesFeed();
+    });
+
     if (!src) {
       playBtn.disabled = true;
       fsBtn.disabled = true;
     }
 
     return card;
+  }
+
+  /* ---------- Favorites ---------- */
+  function getFavorites() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(STORAGE_FAVORITES) || "[]"));
+    } catch {
+      return new Set();
+    }
+  }
+
+  function saveFavorites(set) {
+    localStorage.setItem(STORAGE_FAVORITES, JSON.stringify([...set]));
+  }
+
+  function toggleFavorite(id) {
+    const favs = getFavorites();
+    const isNowFav = !favs.has(id);
+    isNowFav ? favs.add(id) : favs.delete(id);
+    saveFavorites(favs);
+    return isNowFav;
+  }
+
+  async function renderFavoritesFeed() {
+    const feed = document.getElementById("favoritesFeed");
+    const empty = document.getElementById("favoritesEmpty");
+    if (!feed) return;
+
+    const favIds = getFavorites();
+    if (favIds.size === 0) {
+      feed.innerHTML = "";
+      if (empty) empty.hidden = false;
+      return;
+    }
+
+    const allTricks = await getFeedItems("tricks");
+    const allPerfs = await getFeedItems("performances");
+    const trickIds = new Set(allTricks.map((t) => t.id));
+    const allItems = [...allTricks, ...allPerfs];
+    const favItems = allItems.filter((item) => favIds.has(item.id));
+
+    feed.innerHTML = "";
+    for (const item of favItems) {
+      feed.appendChild(await buildCard(item, trickIds.has(item.id) ? "tricks" : "performances"));
+    }
+
+    if (empty) empty.hidden = feed.children.length > 0;
+  }
+
+  /* ---------- Tricks filter (text + chips) ---------- */
+  function applyTricksFilter() {
+    const feed = document.getElementById("tricksFeed");
+    const search = document.getElementById("tricksSearch");
+    const empty = document.getElementById("tricksEmpty");
+    if (!feed || !search) return;
+
+    const q = search.value.trim();
+    let visible = 0;
+
+    feed.querySelectorAll(".video-card").forEach((card) => {
+      const title = card.querySelector(".video-card__title")?.textContent || "";
+      const desc = card.querySelector(".video-card__desc")?.textContent || "";
+      const cardLevel = card.dataset.level || "";
+      const cardElements = card.dataset.elements ? card.dataset.elements.split(",") : [];
+
+      let match = matchesSearch(q, title, desc);
+      if (match && activeLevelFilters.size > 0) match = activeLevelFilters.has(cardLevel);
+      if (match && activeElementFilters.size > 0) match = cardElements.some((el) => activeElementFilters.has(el));
+
+      card.classList.toggle("is-hidden", !match);
+      if (match) visible++;
+    });
+
+    if (empty) empty.hidden = visible > 0;
+  }
+
+  function initTricksFilters() {
+    const search = document.getElementById("tricksSearch");
+    if (search) {
+      search.removeEventListener("input", search._trickFilterHandler);
+      search._trickFilterHandler = applyTricksFilter;
+      search.addEventListener("input", applyTricksFilter);
+    }
+
+    document.querySelectorAll("#tricksFilterBar .filter-chip").forEach((chip) => {
+      chip.removeEventListener("click", chip._filterHandler);
+      chip._filterHandler = () => {
+        const group = chip.dataset.filterGroup;
+        const value = chip.dataset.filterValue;
+        const filters = group === "level" ? activeLevelFilters : activeElementFilters;
+        if (filters.has(value)) {
+          filters.delete(value);
+          chip.classList.remove("filter-chip--active");
+        } else {
+          filters.add(value);
+          chip.classList.add("filter-chip--active");
+        }
+        applyTricksFilter();
+      };
+      chip.addEventListener("click", chip._filterHandler);
+    });
   }
 
   function escapeHtml(s) {
@@ -435,18 +565,25 @@
     document.getElementById("editDesc").value = item?.description || "";
     document.getElementById("editUrl").value = "";
     document.getElementById("editFile").value = "";
+    const levelEl = document.getElementById("editLevel");
+    if (levelEl) levelEl.value = item?.level || "";
+    const tagsEl = document.getElementById("editTags");
+    if (tagsEl) tagsEl.value = (item?.tags || []).join(", ");
 
     const mediaGroup = document.getElementById("editMediaGroup");
     const fileGroup = document.getElementById("editFileGroup");
+    const tagsGroup = document.getElementById("editTagsGroup");
     const deleteBtn = document.getElementById("deleteVideoBtn");
 
     if (isEdit) {
       mediaGroup.hidden = true;
       fileGroup.hidden = true;
+      if (tagsGroup) tagsGroup.hidden = true;
       deleteBtn.hidden = false;
     } else {
       mediaGroup.hidden = false;
       fileGroup.hidden = false;
+      if (tagsGroup) tagsGroup.hidden = false;
       deleteBtn.hidden = true;
     }
 
@@ -470,6 +607,9 @@
     const description = document.getElementById("editDesc").value.trim();
     const url = document.getElementById("editUrl").value.trim();
     const file = document.getElementById("editFile").files?.[0];
+    const level = document.getElementById("editLevel")?.value || "";
+    const tagsRaw = document.getElementById("editTags")?.value || "";
+    const tags = tagsRaw.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
 
     if (!title || !description) return;
 
@@ -480,13 +620,15 @@
     if (isEdit) {
       if (isDefault) {
         const overrides = getOverrides(feed);
-        overrides[id] = { title, description };
+        const override = { title, description };
+        if (level) override.level = level;
+        overrides[id] = override;
         setOverrides(feed, overrides);
       } else {
         const custom = getCustom(feed);
         const idx = custom.findIndex((c) => c.id === id);
         if (idx >= 0) {
-          custom[idx] = { ...custom[idx], title, description };
+          custom[idx] = { ...custom[idx], title, description, level: level || custom[idx].level };
           setCustom(feed, custom);
         }
       }
@@ -500,7 +642,7 @@
       return;
     }
 
-    const item = { id, title, description, tags: [], custom: true };
+    const item = { id, title, description, tags, level, custom: true };
     if (file) {
       const blobId = `blob-${id}`;
       await saveBlob(blobId, file);
