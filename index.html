@@ -20,8 +20,8 @@
     <nav class="nav container">
       <ul class="nav__links" id="navLinks">
         <li><a href="#about" class="nav__link">About</a></li>
-        <li><a href="#tricks" class="nav__link">Tricks</a></li>
         <li><a href="#favorites" class="nav__link">Favorites</a></li>
+        <li><a href="#tricks" class="nav__link">Tricks</a></li>
         <li><a href="#performances" class="nav__link">Performance Library</a></li>
         <li><a href="#contact" class="nav__link nav__link--cta">Contact</a></li>
       </ul>
@@ -83,6 +83,17 @@
       </div>
     </section>
 
+    <section class="section feed-section" id="favorites">
+      <div class="container">
+        <div class="section__header">
+          <h2 class="section__title">Favorites ♥</h2>
+          <p class="section__subtitle">Your saved tricks — tap ♡ on any video to build your personal collection.</p>
+        </div>
+        <div class="video-feed" id="favoritesFeed" aria-label="Favorites video feed"></div>
+        <p class="feed-empty" id="favoritesEmpty">No favorites yet — browse the tricks below and tap ♡ to save them here.</p>
+      </div>
+    </section>
+
     <section class="section feed-section" id="tricks">
       <div class="container">
         <div class="section__header">
@@ -132,17 +143,6 @@
         </div>
         <div class="video-feed" id="performancesFeed" aria-label="Performance Library video feed"></div>
         <p class="feed-empty" id="performancesEmpty" hidden>No performances match your search.</p>
-      </div>
-    </section>
-
-    <section class="section feed-section" id="favorites">
-      <div class="container">
-        <div class="section__header">
-          <h2 class="section__title">Favorites ♥</h2>
-          <p class="section__subtitle">Your saved tricks and performances.</p>
-        </div>
-        <div class="video-feed" id="favoritesFeed" aria-label="Favorites video feed"></div>
-        <p class="feed-empty" id="favoritesEmpty">No favorites yet — tap the heart icon on any video to save it here.</p>
       </div>
     </section>
 

@@ -655,6 +655,8 @@ button, input, textarea { font: inherit; color: inherit; border: none; backgroun
   font-weight: 700;
   font-size: 1.05rem;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .video-card__edit {
@@ -706,6 +708,34 @@ button, input, textarea { font: inherit; color: inherit; border: none; backgroun
   color: var(--accent);
   border-radius: 999px;
 }
+
+/* ===== Level badges ===== */
+.tag-level {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.tag-level--beginner {
+  background: rgba(52, 211, 153, 0.13);
+  color: #2dba86;
+}
+
+.tag-level--intermediate {
+  background: rgba(251, 191, 36, 0.13);
+  color: #d4920f;
+}
+
+.tag-level--expert {
+  background: rgba(248, 113, 113, 0.13);
+  color: #e05555;
+}
+
+[data-theme="light"] .tag-level--beginner { color: #1a9068; }
+[data-theme="light"] .tag-level--intermediate { color: #b47a0a; }
+[data-theme="light"] .tag-level--expert { color: #c03333; }
 
 /* ===== Filter bar ===== */
 .filter-bar {
@@ -819,11 +849,11 @@ button, input, textarea { font: inherit; color: inherit; border: none; backgroun
   width: 100%;
   padding: 0.85rem 1rem;
   background: var(--bg);
+  color: var(--text);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   cursor: pointer;
   transition: border-color var(--transition), box-shadow var(--transition);
-  appearance: auto;
 }
 
 .form-group select:focus {

@@ -310,12 +310,15 @@
     const safeTitle = escapeHtml(item.title);
     const safeDesc = escapeHtml(item.description);
     const tagsHtml = (item.tags || []).map((t) => `<span>${escapeHtml(t)}</span>`).join("");
+    const levelBadge = item.level
+      ? `<span class="tag-level tag-level--${escapeAttr(item.level)}">${escapeHtml(item.level[0].toUpperCase() + item.level.slice(1))}</span>`
+      : "";
     const admin = isAdmin();
     const isFav = getFavorites().has(item.id);
 
     card.innerHTML = `
       <div class="video-card__media">
-        <video preload="metadata" playsinline muted autoplay webkit-playsinline x-webkit-airplay="allow" src="${escapeAttr(src)}"></video>
+        <video preload="metadata" playsinline muted autoplay webkit-playsinline src="${escapeAttr(src)}"></video>
         <button type="button" class="video-card__play-btn" aria-label="Play ${safeTitle}">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </button>
@@ -328,7 +331,7 @@
           ${admin ? `<button type="button" class="video-card__edit" aria-label="Edit" title="Edit">✎</button>` : ""}
         </div>
         <p class="video-card__desc">${safeDesc}</p>
-        <div class="video-card__tags">${tagsHtml}</div>
+        <div class="video-card__tags">${levelBadge}${tagsHtml}</div>
       </div>
     `;
 
@@ -620,15 +623,13 @@
     if (isEdit) {
       if (isDefault) {
         const overrides = getOverrides(feed);
-        const override = { title, description };
-        if (level) override.level = level;
-        overrides[id] = override;
+        overrides[id] = { title, description, level };
         setOverrides(feed, overrides);
       } else {
         const custom = getCustom(feed);
         const idx = custom.findIndex((c) => c.id === id);
         if (idx >= 0) {
-          custom[idx] = { ...custom[idx], title, description, level: level || custom[idx].level };
+          custom[idx] = { ...custom[idx], title, description, level };
           setCustom(feed, custom);
         }
       }
